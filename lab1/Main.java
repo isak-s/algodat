@@ -40,6 +40,8 @@ public class Main {
     public static class Graph {
         private ArrayList<Vertex> vertices;
         private HashMap<Vertex, HashSet<Vertex>> edges;
+        private int nEdges;
+
         private int n;
         public Graph(int n) {
             this.n=n;
@@ -63,6 +65,7 @@ public class Main {
 
                     if (v1.connectsTo(v2)) {
                         edges.get(v1).add(v2);
+                        nEdges++;
                     }
                 }
             }
@@ -79,16 +82,17 @@ public class Main {
         private int distanceFromVtoV(Vertex a, Vertex b, int len) {
             if (a.equals(b))
                 return len;
-            // System.err.println("a is :" + a + " b is : " + b);
 
             int min = Integer.MAX_VALUE;
             
             if (len>n) {
                 return min;
             }
-
+            int i= 0;
             for (Vertex v : edges.get(a)) {
-                min = Integer.min(distanceFromVtoV(v, b, ++len), 1);
+                System.err.println(i);
+                i++;
+                min = Integer.min(distanceFromVtoV(v, b, len+1), min);
             }
 
             return min;
@@ -110,7 +114,7 @@ public class Main {
                     if (!tmp.contains((c))) {
                         return false;
                     }
-                    tmp.replace(c, "");
+                    tmp=tmp.replaceFirst(c, "");
                 }
                 return true;
             }
