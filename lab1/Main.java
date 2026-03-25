@@ -40,9 +40,10 @@ public class Main {
     public static class Graph {
         private ArrayList<Vertex> vertices;
         private HashMap<Vertex, HashSet<Vertex>> edges;
-
+        private int n;
         public Graph(int n) {
-            this.vertices = new ArrayList<Vertex>();
+            this.n=n;
+            this.vertices = new ArrayList<Vertex>(n);
             this.edges = new HashMap<Vertex, HashSet<Vertex>>();
         }
 
@@ -68,6 +69,7 @@ public class Main {
         }
 
         public int distanceFromVtoV(String a, String b) {
+
             // perform breadh first search
             // from a, get all connected vertices
 
@@ -80,6 +82,10 @@ public class Main {
             // System.err.println("a is :" + a + " b is : " + b);
 
             int min = Integer.MAX_VALUE;
+            
+            if (len>n) {
+                return min;
+            }
 
             for (Vertex v : edges.get(a)) {
                 min = Integer.min(distanceFromVtoV(v, b, ++len), 1);
