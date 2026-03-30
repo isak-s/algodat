@@ -22,6 +22,7 @@ public class Main {
         }
         // add edges
         g.createEdges();
+        g.buildMap();
 
         // after that Q lines with 2 (space seperated) words each
         // for each of these lines we answer the query:
@@ -40,13 +41,14 @@ public class Main {
     public static class Graph {
         private ArrayList<Vertex> vertices;
         private HashMap<Vertex, HashSet<Vertex>> edges;
-        private int nEdges;
+        private HashMap<String, Vertex> vertexMap;
 
         private int n;
         public Graph(int n) {
             this.n=n;
             this.vertices = new ArrayList<Vertex>(n);
             this.edges = new HashMap<Vertex, HashSet<Vertex>>();
+            vertexMap = new HashMap<>();
         }
 
         public void addVertex(String s) {
@@ -65,47 +67,80 @@ public class Main {
 
                     if (v1.connectsTo(v2)) {
                         edges.get(v1).add(v2);
-                        nEdges++;
                     }
                 }
             }
         }
 
-        public int distanceFromVtoV(String a, String b) {
-
-            // perform breadh first search
-            // from a, get all connected vertices
-
-            return distanceFromVtoV(new Vertex(a), new Vertex(b), 0);
+        public void buildMap(){
+            for (Vertex v: vertices){
+                vertexMap.put(v.s, v);
+            }
         }
 
+        public int distanceFromVtoV(String a, String b) {
+            ArrayList<Vertex> visited = new ArrayList<Vertex>();
+            Vertex destination = vertexMap.get(b);
+            ArrayList<Vertex> current = new ArrayList<Vertex>();
+            current.add(vertexMap.get(a));
+            boolean found = false;
+            int len = -1;
+            // perform breadh first search
+            // from a, get all connected vertices
+            while(!found&&!current.isEmpty()){
+                ArrayList<Vertex> next = new ArrayList<Vertex>();
+                visited.addAll(current);
+                for(Vertex v: current){
+                    if (v.equals(destination)){
+                        found=true;
+                    }
+                    next.addAll(v.neighbors);
+                }
+                len++;
+                current.addAll(next);
+                current.removeAll(visited);
+            }
+
+            return found ? len : Integer.MAX_VALUE;
+        }
+/* 
         private int distanceFromVtoV(Vertex a, Vertex b, int len) {
+
+
             if (a.equals(b))
-                return len;
+                found=true;
 
             int min = Integer.MAX_VALUE;
             
             if (len>n) {
                 return min;
             }
-            int i= 0;
-            for (Vertex v : edges.get(a)) {
-                System.err.println(i);
-                i++;
+
+            //fint sätt att ta bort visited ur edges.get(a)
+
+
+
+            for (Vertex v : a.neighbors) {
+                if (visited.contains(v)){
+                    return min;
+                }
+                visited.add(v);
                 min = Integer.min(distanceFromVtoV(v, b, len+1), min);
             }
 
             return min;
-        }
+        } */
 
         private class Vertex {
             public String s;
+            public ArrayList<Vertex> neighbors;
 
             public Vertex(String s) {
                 this.s = s;
+                neighbors = new ArrayList<>();
             }
 
-            public Boolean connectsTo(Vertex v2) {
+            public boolean connectsTo(Vertex v2) {
                 // take the last 4 letters in this vertex
                 // does b contain each of them?
                 String tmp = v2.s;
@@ -116,6 +151,7 @@ public class Main {
                     }
                     tmp=tmp.replaceFirst(c, "");
                 }
+                neighbors.add(v2);
                 return true;
             }
 
