@@ -17,19 +17,30 @@
 
   we draw an arc from u to v if all of the last 4 letters in u are present in v.
     - if there are duplicate letters, v should also have duplicates.
+    - the vertex that v connects to should have the same or greater frequency of letters as the substring of the last 4 letters in the original vertex.
+    - 
 
-  Will be given starting and ending word. Find length of shortest path between them.
-
-
-  Using a DFS would most likely end up in a cycle rather quickly
-
-  
   \section{Results}
 
-  \todo[inline]{Briefly comment the results, did the script say all your solutions were correct? Approximately how long time does it take for the program to run on the largest input? What takes the majority of the time?}
+  The script said that all of our solutions were correct.
+  There were no constraints regarding time complexity for building the graph. Our solution was pretty slow, and took way more time than actually searching it.
+
+  The time used to excecute the program was measured with the command: \\
+  time ./check\_solution.sh java Main.java \\
+
+
+  which outputted \\
+  real    0m10,713s \\
+  user    0m19,647s\\
+  sys     0m0,552s\\
+
 
   \section{Implementation details}
+    Initially we accidentally wrote a depth firts search, which gave us the correct results but a lot slower. Here we used a set of edges and a hashap to store edges for each vertex.
+    In our final solution we created our own class vertex which contained a string and a list or vertices connected to it. When creating the Graph, we first add vertex instances for each string in the input, and then add neighbors if they connect to each other.
+    The time complexity of the breadth first search it O(n + m) where n is the amount of vertices and m is the number of edges.
+    The worst case scenario is that we iterate over all of the edges for every vertex.
+    The overall running time was very long since building the graph had a time complexity of O(n \^\ 2)
 
-  \todo[inline]{How did you implement the solution? Which data structures were used? Which modifications to these data structures were used? What is the overall running time? Why?}
 
 \end{document}

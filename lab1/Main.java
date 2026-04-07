@@ -1,169 +1,132 @@
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        // The first row of the input consists two integers N , Q
-        // N is the number of words
-        // Q is the number of querie
+
         int N = scan.nextInt();
         int Q = scan.nextInt();
 
-        // create graph
         Graph g = new Graph(N);
-        // then follows N lines containing one 5 letter word each
-        // add vertices
+
         for (int i = 0; i < N; i++) {
             g.addVertex(scan.next());
         }
-        // add edges
-        g.createEdges();
-        g.buildMap();
 
-        // after that Q lines with 2 (space seperated) words each
-        // for each of these lines we answer the query:
-        // if there exists a path from the first to the second word, output the length
-        // of the path
-        // otherwise print impossible
+        g.buildGraph();
+
         for (int i = 0; i < Q; i++) {
             String w1 = scan.next();
             String w2 = scan.next();
-            int dist = g.distanceFromVtoV(w1, w2);
+            int dist = g.distance(w1, w2);
             System.out.println(dist == Integer.MAX_VALUE ? "Impossible" : dist);
         }
+
         scan.close();
     }
 
-    public static class Graph {
+    static class Graph {
         private ArrayList<Vertex> vertices;
-        private HashMap<Vertex, HashSet<Vertex>> edges;
         private HashMap<String, Vertex> vertexMap;
+        private HashMap<String, List<Vertex>> buckets;
 
-        private int n;
         public Graph(int n) {
-            this.n=n;
-            this.vertices = new ArrayList<Vertex>(n);
-            this.edges = new HashMap<Vertex, HashSet<Vertex>>();
+            vertices = new ArrayList<>(n);
             vertexMap = new HashMap<>();
+            buckets = new HashMap<>();
         }
 
         public void addVertex(String s) {
-            vertices.add(new Vertex(s.toLowerCase()));
+            Vertex v = new Vertex(s.toLowerCase());
+            vertices.add(v);
+            vertexMap.put(v.s, v);
         }
 
-        public void createEdges() {
-            // for v in vertices
-            // for all other v in vertices add an edeg if v connects to b (if i == j do
-            // nothing)
+        public void buildGraph() {
+            // Step 1: bucket vertices by frequency signature
+            for (Vertex v : vertices) {
+                String key = encode(v.freq);
+                buckets.computeIfAbsent(key, k -> new ArrayList<>()).add(v);
+            }
+
             for (Vertex v1 : vertices) {
-                edges.put(v1, new HashSet<>());
-                for (Vertex v2 : vertices) {
-                    if (v1 == v2)
-                        continue;
+                int[] need = new int[26];
 
-                    if (v1.connectsTo(v2)) {
-                        edges.get(v1).add(v2);
-                    }
-                }
-            }
-        }
-
-        public void buildMap(){
-            for (Vertex v: vertices){
-                vertexMap.put(v.s, v);
-            }
-        }
-
-        public int distanceFromVtoV(String a, String b) {
-            ArrayList<Vertex> visited = new ArrayList<Vertex>();
-            Vertex destination = vertexMap.get(b);
-            ArrayList<Vertex> current = new ArrayList<Vertex>();
-            current.add(vertexMap.get(a));
-            boolean found = false;
-            int len = -1;
-            // perform breadh first search
-            // from a, get all connected vertices
-            while(!found&&!current.isEmpty()){
-                ArrayList<Vertex> next = new ArrayList<Vertex>();
-                visited.addAll(current);
-                for(Vertex v: current){
-                    if (v.equals(destination)){
-                        found=true;
-                    }
-                    next.addAll(v.neighbors);
-                }
-                len++;
-                current.addAll(next);
-                current.removeAll(visited);
-            }
-
-            return found ? len : Integer.MAX_VALUE;
-        }
-/* 
-        private int distanceFromVtoV(Vertex a, Vertex b, int len) {
-
-
-            if (a.equals(b))
-                found=true;
-
-            int min = Integer.MAX_VALUE;
-            
-            if (len>n) {
-                return min;
-            }
-
-            //fint sätt att ta bort visited ur edges.get(a)
-
-
-
-            for (Vertex v : a.neighbors) {
-                if (visited.contains(v)){
-                    return min;
-                }
-                visited.add(v);
-                min = Integer.min(distanceFromVtoV(v, b, len+1), min);
-            }
-
-            return min;
-        } */
-
-        private class Vertex {
-            public String s;
-            public ArrayList<Vertex> neighbors;
-
-            public Vertex(String s) {
-                this.s = s;
-                neighbors = new ArrayList<>();
-            }
-
-            public boolean connectsTo(Vertex v2) {
-                // take the last 4 letters in this vertex
-                // does b contain each of them?
-                String tmp = v2.s;
+                // last 4 chars of v1
                 for (int i = 1; i < 5; i++) {
-                    String c = this.s.substring(i, i + 1);
-                    if (!tmp.contains((c))) {
-                        return false;
-                    }
-                    tmp=tmp.replaceFirst(c, "");
+                    need[v1.s.charAt(i) - 'a']++;
                 }
-                neighbors.add(v2);
-                return true;
+
+                // try all possible extra letters
+                for (int c = 0; c < 26; c++) {
+                    int[] candidate = need.clone();
+                    candidate[c]++;
+
+                    String key = encode(candidate);
+                    List<Vertex> matches = buckets.get(key);
+
+                    if (matches != null) {
+                        for (Vertex v2 : matches) {
+                            if (v1 != v2) {
+                                v1.neighbors.add(v2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public int distance(String a, String b) {
+            Vertex start = vertexMap.get(a);
+            Vertex target = vertexMap.get(b);
+
+            if (start == null || target == null) return Integer.MAX_VALUE;
+
+            Queue<Vertex> queue = new ArrayDeque<>();
+            HashMap<Vertex, Integer> dist = new HashMap<>();
+
+            queue.add(start);
+            dist.put(start, 0);
+
+            while (!queue.isEmpty()) {
+                Vertex cur = queue.poll();
+                int d = dist.get(cur);
+
+                if (cur == target) return d;
+
+                for (Vertex nei : cur.neighbors) {
+                    if (!dist.containsKey(nei)) {
+                        dist.put(nei, d + 1);
+                        queue.add(nei);
+                    }
+                }
             }
 
-            @Override
-            public boolean equals(Object obj) {
-                Vertex v = (Vertex) obj;
-                return v.s.equals(this.s);
-            }
+            return Integer.MAX_VALUE;
+        }
 
-            @Override
-            public int hashCode() {
-                return this.s.hashCode();
+        private String encode(int[] freq) {
+            StringBuilder sb = new StringBuilder();
+            for (int f : freq) {
+                sb.append(f).append('#');
+            }
+            return sb.toString();
+        }
+
+        static class Vertex {
+            String s;
+            int[] freq;
+            ArrayList<Vertex> neighbors;
+
+            Vertex(String s) {
+                this.s = s;
+                this.freq = new int[26];
+                this.neighbors = new ArrayList<>();
+
+                for (int i = 0; i < 5; i++) {
+                    freq[s.charAt(i) - 'a']++;
+                }
             }
         }
     }
