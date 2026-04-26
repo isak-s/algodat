@@ -16,11 +16,12 @@ struct Node {
 };
 
 typedef struct {
+    size_t nbr_in_ht;
     size_t size;
     Node** elems;
 } HashTable;
 
-size_t hashpjw(void* sp)
+uint32_t hashpjw(void* sp)
 {
     const char* id = sp;
     const char* p;
@@ -34,13 +35,14 @@ size_t hashpjw(void* sp)
             h ^= g;
         }
     }
-    return (size_t)h;
+    return h;
 }
 
 HashTable* HashTable_create(size_t size)
 {
     HashTable* ht = malloc(sizeof(HashTable));
     ht->size = size;
+    ht->nbr_in_ht = 0;
     ht->elems = malloc(sizeof(Node*)*size);
     for (size_t i = 0; i < size; i++) {
        ht->elems[i] = NULL;
@@ -62,6 +64,7 @@ Node* hashTable_get(HashTable* ht, char word[]) {
 void hashTable_put(HashTable* ht, char word[]) {
     // if the nodes' elements are the same, update count,
     // otherwise go to next node until null and put it there
+    ht->nbr_in_ht++;
     size_t hc = hashpjw(word);
     size_t idx = hc % ht->size;
 
@@ -95,6 +98,7 @@ void hashTable_put(HashTable* ht, char word[]) {
 }
 
 void HashTable_delete(HashTable* ht, char word[]) {
+    ht->nbr_in_ht--;
     size_t hc = hashpjw(word);
     size_t idx = hc % ht->size;
 
@@ -150,9 +154,24 @@ Node* getNodeWithMaxCount(HashTable* ht) {
     return maxNode;
 }
 
+HashTable* doubleSize(HashTable* ht) {
+    HashTable* new_ht = HashTable_create(ht->size*2);
+
+    for (size_t i = 0; i < ht->size; i++)
+    {
+        for (Node *curr = ht->elems[i]; curr != NULL; curr = curr->next)
+        {
+            hashTable_put(new_ht, curr->word);
+            hashTable_get(new_ht, curr->word)->count = curr->count;
+        }
+    }
+    hashTable_free(ht);
+    return new_ht;
+}
+
 int main(int argc, char* argv)
 {
-    HashTable* ht = HashTable_create(2000);
+    HashTable* ht = HashTable_create(1);
 
     char word[MWL];
     int i = 0;
@@ -170,6 +189,10 @@ int main(int argc, char* argv)
         }
         else if (!remove_it) hashTable_put(ht, word);
         i++;
+
+        if (ht->nbr_in_ht != 0 && ((float) ht->nbr_in_ht/ht->size) > 0.25) {
+            ht = doubleSize(ht);
+        }
     }
     // get word with largest count and print it
     Node* max = getNodeWithMaxCount(ht);
