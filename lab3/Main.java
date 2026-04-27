@@ -28,9 +28,6 @@ public class Main {
             unvisitied.add(vertices[i]);
         }
 
-
-
-
         //Build graph
         for (int i=0;i<mEdges;i++){
             int v = scan.nextInt()-1;
@@ -46,8 +43,12 @@ public class Main {
         unvisitied.peek().dist = 0;
 
         for (int i=0;i<nVertices;i++) {
+
             Vertex curr = unvisitied.poll();
-            cost+= curr.dist!=Integer.MAX_VALUE ? curr.dist : 0;
+            while (visited.contains(curr.index)) {
+                curr = unvisitied.poll();
+            }
+            cost+= curr.dist;
             visited.add(curr.index);
             curr.updateNeighbourWeights(unvisitied, visited);
         }
@@ -88,7 +89,6 @@ public class Main {
             if (!(o instanceof Vertex)){
                 throw new UnsupportedOperationException("Unimplemented method 'compareTo'");
             }
-            // TODO Auto-generated method stub
             Vertex e2 = (Vertex) o;
             return this.dist - e2.dist;
             // return e2.dist - this.dist;
