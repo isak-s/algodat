@@ -20,30 +20,22 @@ public class Main {
             is_present=map.contains(word);
             boolean remove_it = i % 16==0;
 
-            //System.err.println(is_present +" " + word + " " + map.getVal(word)+ " " + remove_it);
             if (is_present) {
                 if(remove_it){
                     map.delete(word);
-                    //System.err.println("delete!");
-                    //System.err.println(i + "     "+ word + " " + map.getVal(word));
                     if (map.contains(word)){
-                       // System.err.println(word + " Val: " + map.getVal(word) + " Index: " + i);
                     }
                 }
                 else {
                     map.put(word, map.getVal(word)+1);
-                    //System.err.println("inc! "+ word + " " + map.getVal(word));   
                 }
             }
             else if (!remove_it) {
                 map.put(word, 1);
-                //System.err.println(word);
             }
             if (word.equals("__FRAME_END__")){
                 error++;
-                System.err.println(error + " " + remove_it + " " + map.getVal(word));
             }
-            //System.err.println(i);
             i++;
         }
 
@@ -53,7 +45,6 @@ public class Main {
         //If pairs[j] has higher value, we replace. If they have the same, and out is "lexographically lesser" (alphabetically first), we replace.
         for (int j=0;j<pairs.length;j++){
             if (pairs[j].biggerThan(out) || (pairs[j].equals(out)&&0<out.getKey().compareTo(pairs[j].getKey()))){
-                //System.err.println(pairs[j].getKey() + " " + pairs[j].getValue() );
                 out=pairs[j];
             }
         }
@@ -102,7 +93,7 @@ public class Main {
 
         //Nothing increases size, can become overfull
         public void put(String key, int val){
-            if (capacitance==size){
+            if (capacitance>size/4){
                 doubleSize();
             }
 
