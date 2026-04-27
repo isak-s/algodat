@@ -41,7 +41,7 @@ public class Main {
             vertices[u].addNeighbour(new Edge(vertices[v], w));
             //heapQ.add();
         }
-        
+
         int cost=0;
         unvisitied.peek().dist = 0;
 
@@ -71,7 +71,7 @@ public class Main {
             for (Edge neighbour: neighbours){
                 if (!visited.contains(neighbour.u.index) && neighbour.w < neighbour.u.dist) {
                     var v = new Vertex(neighbour.u.index, neighbour.w);
-                    for (Edge e : neighbours) {
+                    for (Edge e : neighbour.u.neighbours) {
                         v.addNeighbour(e);
                     }
                     pQ.add(v);
@@ -86,11 +86,11 @@ public class Main {
         @Override
         public int compareTo(Object o) {
             if (!(o instanceof Vertex)){
-                throw new UnsupportedOperationException("Unimplemented method 'compareTo'");    
+                throw new UnsupportedOperationException("Unimplemented method 'compareTo'");
             }
             // TODO Auto-generated method stub
             Vertex e2 = (Vertex) o;
-            return this.dist - e2.dist; 
+            return this.dist - e2.dist;
             // return e2.dist - this.dist;
         }
     }
@@ -98,7 +98,7 @@ public class Main {
     public static class Edge{
         public Vertex u;
         public int  w;
-        
+
         public Edge (Vertex u, int w) {
             this.u=u;
             this.w=w;
