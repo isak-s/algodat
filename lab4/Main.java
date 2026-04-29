@@ -1,5 +1,7 @@
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main{
@@ -17,9 +19,10 @@ public class Main{
         scan.close();
 
         double dist = closestPair(players);
-        String res = Double.toString(dist);
-        //Index of comma, and then six digits after. Is +7 because substring is [a,b[
-        System.out.println(res.substring(0, res.indexOf(",")+7));
+
+        DecimalFormat formatter = new DecimalFormat("#0.000000");
+        System.out.println(formatter.format(dist));
+
     }
 
     static public double closestPair(ArrayList<Coord> coords) {
@@ -29,7 +32,7 @@ public class Main{
         return _closestPair(coords);
     }
 
-    static private double _closestPair(ArrayList<Coord> coords) {
+    static private double _closestPair(List<Coord> coords) {
         // double m = getMedian(coords);
         // case 1: only one in coords, INF - no closest
         // case 2: only 2 in coords, return distance between the 2
@@ -52,11 +55,11 @@ public class Main{
                 // filter out all points in coords that are further from the dividing line than min
                 var med = getMedian(coords); // this is the dividing line
 
-                ArrayList<Coord> withinBoundingBox = new ArrayList<>();
-                for (int i = coords.size()/2; xdist(coords.get(i).x, med) < min; i--) {
+                List<Coord> withinBoundingBox = new ArrayList<>();
+                for (int i = coords.size()/2; i < coords.size() && xdist(coords.get(i).x, med) < min; i--) {
                     withinBoundingBox.add(coords.get(i));
                 }
-                for (int i = coords.size()/2; xdist(coords.get(i).x, med) < min; i++) {
+                for (int i = coords.size()/2; i < coords.size() && xdist(coords.get(i).x, med) < min; i++) {
                     withinBoundingBox.add(coords.get(i));
                 }
                 withinBoundingBox.sort(Comparator.comparingInt(Coord::getY));
@@ -78,7 +81,7 @@ public class Main{
         }
     }
 
-    static private double getMedian(ArrayList<Coord> coords) {
+    static private double getMedian(List<Coord> coords) {
         int l = coords.size();
         return l % 2 == 0
             ? (double) coords.get(l/2).x + coords.get(l/2 + 1).x/2
