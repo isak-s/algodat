@@ -56,10 +56,10 @@ public class Main{
                 var med = getMedian(coords); // this is the dividing line
 
                 List<Coord> withinBoundingBox = new ArrayList<>();
-                for (int i = coords.size()/2; i < coords.size() && xdist(coords.get(i).x, med) < min; i--) {
+                for (int i = coords.size()/2; i > 0 && xdist(coords.get(i).x, med) < min; i--) {
                     withinBoundingBox.add(coords.get(i));
                 }
-                for (int i = coords.size()/2; i < coords.size() && xdist(coords.get(i).x, med) < min; i++) {
+                for (int i = coords.size()/2 + 1; i < coords.size() && xdist(coords.get(i).x, med) < min; i++) {
                     withinBoundingBox.add(coords.get(i));
                 }
                 withinBoundingBox.sort(Comparator.comparingInt(Coord::getY));
@@ -70,7 +70,7 @@ public class Main{
                         // if (j > withinBoundingBox.size()) {
                             // break;
                         // }
-                        var dist = withinBoundingBox.get(i)
+                        double dist = withinBoundingBox.get(i)
                             .euDist(withinBoundingBox.get(j));
                         if (dist < min) {
                             min = dist;
