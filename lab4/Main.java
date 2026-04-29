@@ -58,13 +58,13 @@ public class Main{
                 var med = getMedian(coords); // this is the dividing line
 
                 List<Coord> withinBoundingBox = new ArrayList<>();
-                for (int i = coords.size()/2; i > 0 && xdist(coords.get(i).x, med) < min; i--) {
+                for (int i = coords.size()/2; i >= 0 && xdist(coords.get(i).x, med) < min; i--) {
                     withinBoundingBox.add(coords.get(i));
                 }
                 for (int i = coords.size()/2 + 1; i < coords.size() && xdist(coords.get(i).x, med) < min; i++) {
                     withinBoundingBox.add(coords.get(i));
                 }
-                withinBoundingBox.sort(Comparator.comparingInt(Coord::getY));
+                withinBoundingBox.sort((first, second) -> first.y - second.y);
                 // check y values
                 // --- For each point, check dist to next 7 points in the bounding box
                 for (int i = 0; i < withinBoundingBox.size(); i++) {
@@ -86,8 +86,8 @@ public class Main{
     static private double getMedian(List<Coord> coords) {
         int l = coords.size();
         return l % 2 == 0
-            ? (double) coords.get(l/2).x + coords.get(l/2 + 1).x/2
-            : coords.get(l/2 + 1).x;
+            ? (double)( (coords.get(l/2).x + coords.get(l/2 - 1).x)/2)
+            : coords.get(l/2).x;
     }
 
     static public double xdist(double a, double b) {
