@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Main{
@@ -7,31 +7,29 @@ public class Main{
         Scanner scan = new Scanner(System.in);
         int nPlayers = scan.nextInt();
         ArrayList<Coord> players = new ArrayList<>(nPlayers);
-        // ArrayList<Integer> xs = new ArrayList<>();
 
-        double dist = 0.0;
         for (int i=0; i<nPlayers; i++) {
             int x = scan.nextInt();
             int y = scan.nextInt();
-            players[i]= new Coord (x, y);
-            xs.add(x);
+            players.add(new Coord (x, y));
         }
 
-        Math.round(nPlayers);
         scan.close();
+
+        double dist = closestPair(players);
         String res = Double.toString(dist);
         //Index of comma, and then six digits after. Is +7 because substring is [a,b[
         System.out.println(res.substring(0, res.indexOf(",")+7));
     }
 
-    public double closestPair(ArrayList<Coord> coords) {
+    static public double closestPair(ArrayList<Coord> coords) {
         // sort all by x
         coords.sort(null);
         // start the algorithm
         return _closestPair(coords);
     }
 
-    private double _closestPair(ArrayList<Coord> coords) {
+    static private double _closestPair(ArrayList<Coord> coords) {
         // double m = getMedian(coords);
         // case 1: only one in coords, INF - no closest
         // case 2: only 2 in coords, return distance between the 2
@@ -41,54 +39,84 @@ public class Main{
             case 1:
                 return Integer.MAX_VALUE;
             case 2:
-                return coords.get(0).dist(coords.get(1));
+                return coords.get(0).euDist(coords.get(1));
             default:
-                ArrayList<Coord> c1 = (ArrayList<Coord>) coords.subList(0, coords.size() / 2);
-                ArrayList<Coord> c2 = (ArrayList<Coord>) coords.subList(coords.size() / 2, coords.size());
+                List<Coord> c1 = coords.subList(0, coords.size() / 2);
+                List<Coord> c2 = coords.subList(coords.size() / 2, coords.size());
                 var r1 = _closestPair(c1);
                 var r2 = _closestPair(c2);
-                var submin = Math.min(r1, r2);
+                var min = Math.min(r1, r2);
                 // get closest pair in the 2 sublists
                 // make a bounding box with that delta.
                 // if we find a closer pair between the dividing line, use that.
-                Double dlMin = Double.MAX_VALUE;
-                // filter out all points in coords that are further from the dividing line than subMin
+                // filter out all points in coords that are further from the dividing line than min
+                var med = getMedian(coords); // this is the dividing line
+
+                ArrayList<Coord> withinBoundingBox = new ArrayList<>();
+                for (int i = coords.size()/2; xdist(coords.get(i).x, med) < min; i--) {
+                    withinBoundingBox.add(coords.get(i));
+                }
+                for (int i = coords.size()/2; xdist(coords.get(i).x, med) < min; i++) {
+                    withinBoundingBox.add(coords.get(i));
+                }
+                withinBoundingBox.sort(Comparator.comparingInt(Coord::getY));
                 // check y values
-                // --- For each point, check dist to all other points in the bounding box
-
-
-                return Math.min(dlMin, submin);
+                // --- For each point, check dist to next 7 points in the bounding box
+                for (int i = 0; i < withinBoundingBox.size(); i++) {
+                    for (int j = i+1; j < i + 8 && j < withinBoundingBox.size(); j++) {
+                        // if (j > withinBoundingBox.size()) {
+                            // break;
+                        // }
+                        var dist = withinBoundingBox.get(i)
+                            .euDist(withinBoundingBox.get(j));
+                        if (dist < min) {
+                            min = dist;
+                        }
+                    }
+                }
+                return min;
         }
     }
 
-    private double getMedian(Coord[] coords) {
-        int l = coords.length;
+    static private double getMedian(ArrayList<Coord> coords) {
+        int l = coords.size();
         return l % 2 == 0
-            ? (double) coords[l/2].x + coords[l/2 + 1].x/2
-            : coords[l/2 + 1].x;
+            ? (double) coords.get(l/2).x + coords.get(l/2 + 1).x/2
+            : coords.get(l/2 + 1).x;
+    }
+
+    static public double xdist(double a, double b) {
+        return Math.abs(a-b);
     }
 
     public static class Coord implements Comparable{
         int x;
         int y;
 
+        public int getY() {
+            return y;
+        }
+
         public Coord(int x, int y) {
             this.x=x;
             this.y=y;
         }
         // euclidean
-        public double dist(Coord c2) {
+        public double euDist(Coord c2) {
             return Math.sqrt(Math.pow(x-c2.x, 2) + Math.pow(y - c2.y, 2));
+        }
+
+        public int xdist(Coord c2) {
+            return Math.abs(x - c2.x);
         }
 
         @Override
         public int compareTo(Object o) {
-            if (o instanceof Coord) {
-            throw new UnsupportedOperationException("Unimplemented method 'compareTo'");
+            if (!(o instanceof Coord)) {
+                throw new UnsupportedOperationException("penis");
             }
             Coord other = (Coord) o;
             return this.x - other.x;
-            // TODO Auto-generated method stub
         }
     }
 }
