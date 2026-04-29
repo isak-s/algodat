@@ -1,7 +1,9 @@
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Main{
@@ -20,7 +22,7 @@ public class Main{
 
         double dist = closestPair(players);
 
-        DecimalFormat formatter = new DecimalFormat("#0.000000");
+        DecimalFormat formatter = new DecimalFormat("#0.000000", new DecimalFormatSymbols(Locale.US));
         System.out.println(formatter.format(dist));
 
     }
