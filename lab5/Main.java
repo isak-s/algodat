@@ -50,39 +50,57 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-
-        String[] inputLine = scan.nextLine().split(" ");
-        ArrayList<Letter> letters = new ArrayList<>();
+        String inp = scan.nextLine();
+        String chars = inp.strip();
+        String[] inputLine = inp.split(" "); 
         int nLetters = inputLine.length;
+        HashMap<String, Letter> letters = new HashMap<>();
 
-        //Varje
+        //Every char is converted to a Letter
         for (String letter: inputLine) {
-            letters.add(new Letter(letter));
+            letters.put(letter, new Letter(letter));
         }
 
+        //every Letter gets its ascendency matrix filled.
         for (int i=0;i<nLetters;i++) {
-            for (int j=i; j<nLetters;j++){
-                letters.get(i).addCost(letters.get(j).id, scan.nextInt());
+            for (int j=0; j<nLetters;j++){
+                letters.get(Character.toString(chars.charAt(i)))
+                    .addCost(letters.get(Character.toString(chars.charAt(j))), scan.nextInt());
             }
         }
 
+        int nQueries = scan.nextInt();
+
+        for (int i=0; i<nQueries; i++){
+            System.out.println(getOutput(scan.next(), scan.next(), letters));
+        }
+
         scan.close();
+
+
+
+
+    }
+
+    public static String getOutput(String first, String second, HashMap<String, Letter> letters){
+        
+        return "";
 
     }
 
     public static class Letter {
         String id;
-        HashMap<String, Integer> replaceCosts;
+        HashMap<Letter, Integer> replaceCosts;
 
         public Letter(String id) {
             this.id=id;
         }
 
-        public void addCost(String replacement, int cost) {
+        public void addCost(Letter replacement, int cost) {
             replaceCosts.put(replacement, cost);
         }
 
-        public int getCost(String replacement) {
+        public int getCost(Letter replacement) {
             return replaceCosts.get(replacement);
         }
     }
