@@ -24,7 +24,11 @@ ba*j
 remainder = baj
 remainingTarget = abaj
 
-currString = ba****, currCost = int, remainder: String, remainingTarget: string
+penispen**
+**nispenis
+
+
+currString = ba****, currCost = int, remainder: String, remainingTarget: string, (nbrAsterisksInserted, nbrAsterisksAllowed)
     is the lenght of the remainder and the remainingTarget the same length &&
     char at remainder[0] the same as remainingTarget[0]
         -> add the cost to currCost, Append to currstring (update lookup table), remove from remainder and target
@@ -35,7 +39,9 @@ currString = ba****, currCost = int, remainder: String, remainingTarget: string
             2. insert an astterisk to *raminderTarget* then recurse with tail remainder and tail remainingTarget (add to lookup)
             3. add cost of the diff to cost. Recurse with tail, and insert the asterisk in a later step 1 (add to lookup)
 
-
+when we do a recursive call, first check if there is already a best cost for remainder + remainingTarget in our lookup.
+If it is empty, we use that cost
+otherwise we compute it and store it.
 
 -> subsolutions may overlap?
 if we have two asterisks or more,
