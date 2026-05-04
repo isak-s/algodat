@@ -28,7 +28,7 @@ penispen**
 **nispenis
 
 
-currString = ba****, currCost = int, remainder: String, remainingTarget: string, (nbrAsterisksInserted, nbrAsterisksAllowed)
+currString = ba****, currCost = int, remainderLeft: String, remainderRight: string, (nbrAsterisksInserted, nbrAsterisksAllowed)
     is the lenght of the remainder and the remainingTarget the same length &&
     char at remainder[0] the same as remainingTarget[0]
         -> add the cost to currCost, Append to currstring (update lookup table), remove from remainder and target
@@ -54,11 +54,61 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
+
+
+    HashMap<String, Letter> letters;
+    /*
+    cs = currstring
+    cc = currcost
+    rl = remainder left
+    rr = remainder right
+    nAI = nbr asteriskt inserted
+    nAA = nbr asterisk allowed
+    */
+    public int match(String cs, int cc, String rl, String rr, int nAI, int nAA) {
+        // base case 2: we have already computed the best cost for this remainderLeft and remainderRight!
+        // then we just return the saved value from the lookup.
+
+
+        // base case: no remainders:
+        if (true) {
+
+        }
+
+
+        int c1 = 0;
+        int c2 = 0;
+        int c3 = 0;
+
+        // lookup cost of the diff,
+        int diff = 1000000;
+        c3 += diff;
+
+
+        if (nAI <= nAA) {
+            // insert in remainderLeft
+            // recursive call with an asterisk inserted
+            String remainderLeftNew = "*" + rl;
+            c1 = match(cs, cc, remainderLeftNew, rr, ++nAI, nAA);
+
+            // insert in remainderRight
+            String remainderRightNew = "*" + rr;
+            c2 = match(cs, cc, rl, remainderRightNew, nAI, nAA);
+        }
+
+        return Math.max(c1, Math.max(c2, c3));
+    }
+
+    public Main() {
+        this.letters = new HashMap<>();
+    }
+
     public static void main(String[] args) {
+        Main mainclass = new Main();
         Scanner scan = new Scanner(System.in);
         String inp = scan.nextLine();
         String chars = inp.strip();
-        String[] inputLine = inp.split(" "); 
+        String[] inputLine = inp.split(" ");
         int nLetters = inputLine.length;
         HashMap<String, Letter> letters = new HashMap<>();
 
@@ -78,18 +128,19 @@ public class Main {
         int nQueries = scan.nextInt();
 
         for (int i=0; i<nQueries; i++){
+
+            String left = scan.next();
+            String right = scan.next();
+            mainclass.match("", 0, left, right, 0, right.length());
             System.out.println(getOutput(scan.next(), scan.next(), letters));
         }
 
         scan.close();
 
-
-
-
     }
 
     public static String getOutput(String first, String second, HashMap<String, Letter> letters){
-        
+
         return "";
 
     }
