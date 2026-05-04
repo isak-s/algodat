@@ -49,58 +49,71 @@ if we have two asterisks or more,
 We should use a trie i think
 
 */
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
 
 
-    HashMap<String, Letter> letters;
+    HashMap<Character, Letter> letters;
+    HashMap<Integer, Integer> cache;
     /*
-    cs = currstring
+    csl = currstring
     cc = currcost
     rl = remainder left
     rr = remainder right
     nAI = nbr asteriskt inserted
     nAA = nbr asterisk allowed
     */
-    public int match(String cs, int cc, String rl, String rr, int nAI, int nAA) {
+
+    public int diffCost(char l, char r) {
+        return letters.get(l).getCost(r);
+    }
+    public int match(String csl, int cc, String rl, String rr, int nAI, int nAA) {
         // base case 2: we have already computed the best cost for this remainderLeft and remainderRight!
         // then we just return the saved value from the lookup.
 
+        int key = rl.hashCode() + rr.hashCode();
+
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        }
+
 
         // base case: no remainders:
-        if (true) {
-
+        if (rl.length() == 0) {
+            return match(csl, cc, "*"+rl, rr, nAI, nAA);
+        }
+        if (rr.length() == 0) {
+            return match(csl, cc, rl, "*"+rr, nAI, nAA);
         }
 
+        // get best match
+        int c1 = diffCost(rl.charAt(0), rr.charAt(0));
+        int c2 = -4; // for c2 and c3, there is an asterisk inserted which is -4
+        int c3 = -4;
 
-        int c1 = 0;
-        int c2 = 0;
-        int c3 = 0;
+        c1 += match(csl, cc, rl.substring(1), rr.substring(1), nAI, nAA);
 
-        // lookup cost of the diff,
-        int diff = 1000000;
-        c3 += diff;
-
-
-        if (nAI <= nAA) {
+        if (nAI < nAA) {
             // insert in remainderLeft
             // recursive call with an asterisk inserted
-            String remainderLeftNew = "*" + rl;
-            c1 = match(cs, cc, remainderLeftNew, rr, ++nAI, nAA);
+            c2 += match(csl, cc, "*"+rl, rr, ++nAI, nAA);
 
             // insert in remainderRight
-            String remainderRightNew = "*" + rr;
-            c2 = match(cs, cc, rl, remainderRightNew, nAI, nAA);
+            c3 += match(csl, cc, rl, "*"+rr, nAI, nAA);
         }
+        int cost = Math.max(c1, Math.max(c2, c3));
+        // with some hashcode representing the remainders
+        // cache.put(cost);
+        cache.put(key, cost);
 
-        return Math.max(c1, Math.max(c2, c3));
+        return cost;
     }
 
     public Main() {
         this.letters = new HashMap<>();
+        this.cache = new HashMap<>();
     }
 
     public static void main(String[] args) {
@@ -110,18 +123,17 @@ public class Main {
         String chars = inp.strip();
         String[] inputLine = inp.split(" ");
         int nLetters = inputLine.length;
-        HashMap<String, Letter> letters = new HashMap<>();
 
         //Every char is converted to a Letter
-        for (String letter: inputLine) {
-            letters.put(letter, new Letter(letter));
+        for (int i = 0; i < chars.length(); i++) {
+            mainclass.letters.put(chars.charAt(i), new Letter(chars.charAt(i)));
         }
 
         //every Letter gets its ascendency matrix filled.
         for (int i=0;i<nLetters;i++) {
             for (int j=0; j<nLetters;j++){
-                letters.get(Character.toString(chars.charAt(i)))
-                    .addCost(letters.get(Character.toString(chars.charAt(j))), scan.nextInt());
+                mainclass.letters.get(chars.charAt(i))
+                    .addCost(chars.charAt(j), scan.nextInt());
             }
         }
 
@@ -132,32 +144,25 @@ public class Main {
             String left = scan.next();
             String right = scan.next();
             mainclass.match("", 0, left, right, 0, right.length());
-            System.out.println(getOutput(scan.next(), scan.next(), letters));
         }
 
         scan.close();
 
     }
 
-    public static String getOutput(String first, String second, HashMap<String, Letter> letters){
-
-        return "";
-
-    }
-
     public static class Letter {
-        String id;
-        HashMap<Letter, Integer> replaceCosts;
+        char id;
+        HashMap<Character, Integer> replaceCosts;
 
-        public Letter(String id) {
+        public Letter(char id) {
             this.id=id;
         }
 
-        public void addCost(Letter replacement, int cost) {
+        public void addCost(char replacement, int cost) {
             replaceCosts.put(replacement, cost);
         }
 
-        public int getCost(Letter replacement) {
+        public int getCost(char replacement) {
             return replaceCosts.get(replacement);
         }
     }
