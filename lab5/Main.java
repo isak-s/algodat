@@ -46,74 +46,66 @@ otherwise we compute it and store it.
 -> subsolutions may overlap?
 if we have two asterisks or more,
 
-We should use a trie i think
+NEW APPROACH
 
+1. prepend the left string with an *, without actually doing it. record cost -4, take the entire left string and the tail of the right one and recurse with i and j++
+2. same as 1 but with right. recurse with i++ and j
+3. record the diff of the chars at i and j, recurse with i++ and j++
+
+the caller then takes the max from the 3 recursive callees, puts into cache and returns it.
+
+The path we took to get to indices i and j do not say anyhing about what the
+rest of the cost will be
+
+we can therefore cache the subsolutions one time and lookup subsequent times.
 */
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
 
-
     HashMap<Character, Letter> letters;
-    HashMap<Integer, Integer> cache;
-    /*
-    csl = currstring
-    cc = currcost
-    rl = remainder left
-    rr = remainder right
-    nAI = nbr asteriskt inserted
-    nAA = nbr asterisk allowed
-    */
 
     public int diffCost(char l, char r) {
         return letters.get(l).getCost(r);
     }
-    public int match(String csl, int cc, String rl, String rr, int nAI, int nAA) {
-        // base case 2: we have already computed the best cost for this remainderLeft and remainderRight!
-        // then we just return the saved value from the lookup.
 
-        int key = rl.hashCode() + rr.hashCode();
-
-        if (cache.containsKey(key)) {
-            return cache.get(key);
+    public int match(Tuple<Integer, Integer> indices, String left, String right, Integer[][] cache) {
+        // base case 0: both are at exact end index. Caught by base case 1 and 2
+        // base case 1
+        // j is at the end of the right string. No more insertions to do.
+        // we have to insert asterisks until the lenght is the same.
+        if (indices.left == left.length()) {
+            return -4 * Math.abs(right.length() - indices.right);
+        }
+        // base case 2
+        // i is at the end of the left string. no more insertions to do.
+        // asterisks...
+        if (indices.right == right.length()) {
+            return -4 * (left.length() - indices.left);
         }
 
+        // case1.
+        // prepend the left string with an *, without actually doing it.
+        // record cost -4, take the entire left string and the tail of the right
+        // one and recurse with i and j++
+        int case1 = 1;
+        //case2.
+        // same as case1 but with i++ and j
+        int case2 = 2;
+        // case 3.
+        // record the diff of th ecars at i and j, recurse with i++ and j++
+        int case3 = 3;
 
-        // base case: no remainders:
-        if (rl.length() == 0) {
-            return match(csl, cc, "*"+rl, rr, nAI, nAA);
-        }
-        if (rr.length() == 0) {
-            return match(csl, cc, rl, "*"+rr, nAI, nAA);
-        }
+        int best = Math.max(case1, Math.max(case2, case3));
 
-        // get best match
-        int c1 = diffCost(rl.charAt(0), rr.charAt(0));
-        int c2 = -4; // for c2 and c3, there is an asterisk inserted which is -4
-        int c3 = -4;
+        cache[indices.left][indices.right] = best;
 
-        c1 += match(csl, cc, rl.substring(1), rr.substring(1), nAI, nAA);
-
-        if (nAI < nAA) {
-            // insert in remainderLeft
-            // recursive call with an asterisk inserted
-            c2 += match(csl, cc, "*"+rl, rr, ++nAI, nAA);
-
-            // insert in remainderRight
-            c3 += match(csl, cc, rl, "*"+rr, nAI, nAA);
-        }
-        int cost = Math.max(c1, Math.max(c2, c3));
-        // with some hashcode representing the remainders
-        // cache.put(cost);
-        cache.put(key, cost);
-
-        return cost;
+        return best;
     }
 
     public Main() {
         this.letters = new HashMap<>();
-        this.cache = new HashMap<>();
     }
 
     public static void main(String[] args) {
@@ -132,8 +124,11 @@ public class Main {
         //every Letter gets its ascendency matrix filled.
         for (int i=0;i<nLetters;i++) {
             for (int j=0; j<nLetters;j++){
+                int c = scan.nextInt();
                 mainclass.letters.get(chars.charAt(i))
-                    .addCost(chars.charAt(j), scan.nextInt());
+                    .addCost(chars.charAt(j), c);
+                mainclass.letters.get(chars.charAt(j))
+                    .addCost(chars.charAt(i), c);
             }
         }
 
@@ -143,11 +138,27 @@ public class Main {
 
             String left = scan.next();
             String right = scan.next();
-            mainclass.match("", 0, left, right, 0, right.length());
+            Integer[][] cache = new Integer[left.length()][right.length()];
+            mainclass.match(
+                new Tuple<Integer,Integer>(0, 0),
+                left,
+                right,
+                cache
+            );
         }
 
         scan.close();
 
+    }
+
+    public static class Tuple<X, Y> {
+        public final X left;
+        public final Y right;
+
+        public Tuple(X left, Y right) {
+            this.left = left;
+            this.right = right;
+        }
     }
 
     public static class Letter {
@@ -156,6 +167,8 @@ public class Main {
 
         public Letter(char id) {
             this.id=id;
+            replaceCosts = new HashMap<>();
+            //replaceCosts.put('*', 1000);
         }
 
         public void addCost(char replacement, int cost) {
