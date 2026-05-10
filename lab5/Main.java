@@ -52,12 +52,16 @@ NEW APPROACH
 2. same as 1 but with right. recurse with i++ and j
 3. record the diff of the chars at i and j, recurse with i++ and j++
 
-the caller then takes the max from the 3 recursive callees, puts into cache and returns it.
+the caller then takes the max from the 3 recursive callees, puts into cache
 
 The path we took to get to indices i and j do not say anyhing about what the
 rest of the cost will be
 
 we can therefore cache the subsolutions one time and lookup subsequent times.
+
+We solve the problem in 2 steps. first we construt the cache, then we traverse it
+to construct the optimal strings.
+
 */
 import java.util.HashMap;
 import java.util.Scanner;
@@ -69,20 +73,21 @@ public class Main {
     public int diffCost(char l, char r) {
         return letters.get(l).getCost(r);
     }
-
-    public int match(Tuple<Integer, Integer> indices, String left, String right, Integer[][] cache) {
+    /* returns the reconstructed strings. */
+    public void match(Tuple<Integer, Integer> indices,
+        String left, String right, Integer[][] cache) {
         // base case 0: both are at exact end index. Caught by base case 1 and 2
         // base case 1
         // j is at the end of the right string. No more insertions to do.
         // we have to insert asterisks until the lenght is the same.
         if (indices.left == left.length()) {
-            return -4 * Math.abs(right.length() - indices.right);
+            cache[indices.left][indices.right] =  -4 * right.length() - indices.right;
         }
         // base case 2
         // i is at the end of the left string. no more insertions to do.
         // asterisks...
         if (indices.right == right.length()) {
-            return -4 * (left.length() - indices.left);
+            cache[indices.left][indices.right] = -4 * (left.length() - indices.left);
         }
 
         // case1.
@@ -101,8 +106,18 @@ public class Main {
 
         cache[indices.left][indices.right] = best;
 
-        return best;
     }
+
+    public Tuple<String, String> retrace(String left, String right, Integer[][] cache) {
+        StringBuilder sbLeft = new StringBuilder();
+        StringBuilder sbRight = new StringBuilder();
+
+        // we have 3 neighbors. (--i, j) (i, --j) and (--i, --j)
+
+
+        return new Tuple<>("penis", "penis");
+        }
+
 
     public Main() {
         this.letters = new HashMap<>();
@@ -145,10 +160,11 @@ public class Main {
                 right,
                 cache
             );
+            Tuple<String, String> res = mainclass.retrace(left, right, cache);
+
+            System.out.println(res.left + " " + res.right);
         }
-
         scan.close();
-
     }
 
     public static class Tuple<X, Y> {
