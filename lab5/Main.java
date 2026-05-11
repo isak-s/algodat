@@ -102,13 +102,13 @@ public class Main {
         int case1 = -4 + cache[indices.left][indices.right + 1];
         //case2.
         // same as case1 but with i++ and j
-        
+
         match(new Tuple<>(indices.left + 1, indices.right), left, right, cache);
         int case2 = -4 + cache[indices.left +1][indices.right];
         // case 3.
         // record the diff of th ecars at i and j, recurse with i++ and j++
 
-        
+
         match(new Tuple<>(indices.left + 1, indices.right + 1), left, right, cache);
         char l = left.charAt(indices.left);
         char r = right.charAt(indices.right);
@@ -128,16 +128,18 @@ public class Main {
         int j = 0;
 
         while (true) {
-            if (i >= left.length() && j >= right.length()) {
+            if (i >= left.length()-1 && j >= right.length()-1) {
                 break;
             }
             if (i >= left.length()-1) {
                 sbLeft.append('*');
                 sbRight.append(right.charAt(j));
+                j++;
                 continue;
             }
             if (j >= right.length()-1) {
                 sbLeft.append(left.charAt(i));
+                i++;
                 sbRight.append('*');
                 continue;
             }
@@ -188,7 +190,7 @@ public class Main {
         Main mainclass = new Main();
         Scanner scan = new Scanner(System.in);
         String inp = scan.nextLine();
-        String chars = inp.strip();
+        String chars = inp.strip().replace(" ", "");
         String[] inputLine = inp.split(" ");
         int nLetters = inputLine.length;
 
