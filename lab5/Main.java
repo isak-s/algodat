@@ -80,27 +80,39 @@ public class Main {
         // base case 1
         // j is at the end of the right string. No more insertions to do.
         // we have to insert asterisks until the lenght is the same.
-        if (indices.left == left.length()) {
+
+        if (indices.left == left.length()-1) {
             cache[indices.left][indices.right] =  -4 * right.length() - indices.right;
+            return;
         }
         // base case 2
         // i is at the end of the left string. no more insertions to do.
         // asterisks...
-        if (indices.right == right.length()) {
+        if (indices.right == right.length()-1) {
             cache[indices.left][indices.right] = -4 * (left.length() - indices.left);
+            return;
         }
 
         // case1.
         // prepend the left string with an *, without actually doing it.
         // record cost -4, take the entire left string and the tail of the right
         // one and recurse with i and j++
-        int case1 = 1;
+        match(new Tuple<>(indices.left, indices.right + 1), left, right, cache);
+
+        int case1 = -4 + cache[indices.left][indices.right + 1];
         //case2.
         // same as case1 but with i++ and j
-        int case2 = 2;
+        
+        match(new Tuple<>(indices.left + 1, indices.right), left, right, cache);
+        int case2 = -4 + cache[indices.left +1][indices.right];
         // case 3.
         // record the diff of th ecars at i and j, recurse with i++ and j++
-        int case3 = 3;
+
+        
+        match(new Tuple<>(indices.left + 1, indices.right + 1), left, right, cache);
+        char l = left.charAt(indices.left);
+        char r = right.charAt(indices.right);
+        int case3 = letters.get(l).getCost(r) + cache[indices.left+1][indices.right+1];
 
         int best = Math.max(case1, Math.max(case2, case3));
 
@@ -112,10 +124,59 @@ public class Main {
         StringBuilder sbLeft = new StringBuilder();
         StringBuilder sbRight = new StringBuilder();
 
+        int i = 0;
+        int j = 0;
+
+        while (true) {
+            if (i >= left.length() && j >= right.length()) {
+                break;
+            }
+            if (i >= left.length()-1) {
+                sbLeft.append('*');
+                sbRight.append(right.charAt(j));
+                continue;
+            }
+            if (j >= left.length()-1) {
+                sbLeft.append(left.charAt(i));
+                sbRight.append('*');
+                continue;
+            }
+
+            int costRight = cache[i][j+1];
+            int costDown = cache[i+1][j];
+            int costDiag = cache[i+1][j+1];
+
+            if (costRight >= costDiag && costRight >= costDown) {
+                sbLeft.append(left.charAt(i));
+                sbRight.append('*');
+                j++;
+
+            }
+            else if  ( costDown >=costDiag){
+                sbLeft.append('*');
+                sbRight.append(right.charAt(j));
+                i++;
+
+            }
+            else  {
+                sbLeft.append(left.charAt(i));
+                sbRight.append(right.charAt(j));
+                j++;
+                i++;
+            }
+
+
+
+        }
+
+        // vi kanske måste lägga massa asterisker på svansen också
+        // i är vid max men inte j, och j är vid max men inte i
+
+
         // we have 3 neighbors. (--i, j) (i, --j) and (--i, --j)
 
 
-        return new Tuple<>("penis", "penis");
+        return new Tuple<>(sbLeft.toString(), sbRight.toString());
         }
 
 
