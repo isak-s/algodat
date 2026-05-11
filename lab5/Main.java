@@ -136,7 +136,7 @@ public class Main {
                 sbRight.append(right.charAt(j));
                 continue;
             }
-            if (j >= left.length()-1) {
+            if (j >= right.length()-1) {
                 sbLeft.append(left.charAt(i));
                 sbRight.append('*');
                 continue;
