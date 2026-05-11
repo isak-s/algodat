@@ -76,13 +76,17 @@ public class Main {
     /* returns the reconstructed strings. */
     public void match(Tuple<Integer, Integer> indices,
         String left, String right, Integer[][] cache) {
+        
+        if (cache[indices.left][indices.right] != null) {
+            return;
+        }
         // base case 0: both are at exact end index. Caught by base case 1 and 2
         // base case 1
         // j is at the end of the right string. No more insertions to do.
         // we have to insert asterisks until the lenght is the same.
 
         if (indices.left == left.length()-1) {
-            cache[indices.left][indices.right] =  -4 * right.length() - indices.right;
+            cache[indices.left][indices.right] =  -4 * (right.length() - indices.right);
             return;
         }
         // base case 2
@@ -128,36 +132,41 @@ public class Main {
         int j = 0;
 
         while (true) {
-            if (i >= left.length()-1 && j >= right.length()-1) {
+
+            if (i >= left.length() && j >= right.length()) {
                 break;
             }
-            if (i >= left.length()-1) {
+            if (i >= left.length()) {
                 sbLeft.append('*');
                 sbRight.append(right.charAt(j));
                 j++;
                 continue;
             }
-            if (j >= right.length()-1) {
+            if (j >= right.length()) {
                 sbLeft.append(left.charAt(i));
                 i++;
                 sbRight.append('*');
                 continue;
             }
 
-            int costRight = cache[i][j+1];
-            int costDown = cache[i+1][j];
-            int costDiag = cache[i+1][j+1];
+
+            
+
+            int costRight = i<left.length()-1 ? cache[i+1][j] -4 : Integer.MIN_VALUE;
+            int costDown = j<right.length()-1 ? cache[i][j+1] -4: Integer.MIN_VALUE;
+            int costDiag = i<left.length()-1 &&j<right.length()-1? cache[i+1][j+1] +
+                 letters.get(left.charAt(i)).getCost(right.charAt(j)): Integer.MIN_VALUE+1;
 
             if (costRight >= costDiag && costRight >= costDown) {
                 sbLeft.append(left.charAt(i));
                 sbRight.append('*');
-                j++;
+                i++;
 
             }
             else if  ( costDown >=costDiag){
                 sbLeft.append('*');
                 sbRight.append(right.charAt(j));
-                i++;
+                j++;
 
             }
             else  {
@@ -172,7 +181,7 @@ public class Main {
         }
 
         // vi kanske måste lägga massa asterisker på svansen också
-        // i är vid max men inte j, och j är vid max men inte i
+        // i är vid max men e j, och j är vid max men inte i
 
 
         // we have 3 neighbors. (--i, j) (i, --j) and (--i, --j)
