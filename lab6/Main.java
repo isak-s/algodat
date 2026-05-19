@@ -25,7 +25,42 @@ Node nNodes - 1 is considered end (Lund)
 
 public class Main {
 
-    public int fordFulkerson(HashMap<Integer, Edge> edges, int start, int end) {
+    public static Node[] createResidualGraph(Node[] original) {
+        Node[] residual = new Node[original.length];
+
+        for (int i = 0; i < original.length; i++) {
+            for (Edge e : original[i].edges) {
+                if (e.flow == 0) {
+                    // only forwards edge
+                    Edge forward = new Edge(e.u, e.v, e.c, 0);
+                    residual[i].addEdge(forward);
+                }
+                else if (e.c == e.flow) {
+                    // only backwards edge
+                    Edge backward = new Edge(e.v, e.u, e.flow, 0);
+                    residual[i].addEdge(backward);
+                } else {
+                    // create forward and backwards edge
+                    Edge forward = new Edge(e.u, e.v, e.c - e.flow, 0);
+                    Edge backward = new Edge(e.v, e.u, e.flow, 0);
+                    residual[i].addEdge(forward);
+                    residual[i].addEdge(backward);
+                }
+            }
+        }
+        return residual;
+    }
+    public int fordFulkerson(Node[] original, int start, int end) {
+        Node[] residual = createResidualGraph(original);
+        HashSet<Node> visitedNodes = new HashSet<>();
+        HashSet<Edge> edgesInPath = new HashSet<>();
+
+        // find a path.
+        // Is there a path?
+        // -> update all the edges on that path's cost
+
+        
+
         return 0;
     }
 
