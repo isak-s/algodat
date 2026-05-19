@@ -32,22 +32,25 @@ public class Main {
     public static void main(String args[]) {
         Scanner scan = new Scanner(System.in);
 
-        HashMap<Integer, Edge> edges = new HashMap<>();
         // first line consists of four integers N M C P
         int nNodes = scan.nextInt();
         int mEdges = scan.nextInt();
         int cCapacity = scan.nextInt();
         int pRoutesToRemove = scan.nextInt();
 
+        Node[] nodes = new Node[nNodes];
+        for (int i = 0; i < nNodes; i++) {
+            nodes[i] = new Node();
+        }
 
         for (int i = 0; i < mEdges; i++) {
             // these edges are undirected
             int nodeV = scan.nextInt();
             int nodeU = scan.nextInt();
             int c = scan.nextInt();
-            Edge e = new Edge(nodeU, nodeV, c);
-            // construt the graph here
-            edges.put(i, e);
+            Edge e = new Edge(nodeU, nodeV, c, i);
+
+            nodes[nodeU].addEdge(e);
         }
 
         int lowestPossibleCapacity = 0;
@@ -56,7 +59,7 @@ public class Main {
         for (int i = 0; i < pRoutesToRemove; i++) {
             int edgeIdx = scan.nextInt();
 
-            edges.remove(edgeIdx);
+            removeEdge(nodes, edgeIdx);
 
             int newCap = fordFulkerson();
             Boolean canRemove = newCap > cCapacity;
@@ -73,13 +76,40 @@ public class Main {
         scan.close();
     }
 
+    public static void removeEdge(Node[] nodes, int edgeIdxToRemove) {
+        for (Node node : nodes) {
+            for (Edge e : node.edges) {
+                if (e.idx == edgeIdxToRemove) {
+                    node.removeEdge(e);
+                    return;
+                }
+            }
+        }
+    }
+
+    static class Node {
+        public HashSet<Edge> edges;
+
+        public Node() {
+        }
+
+        public void addEdge(Edge e) {
+            edges.add(e);
+        }
+
+        public void removeEdge(Edge e) {
+            edges.remove(e);
+        }
+    }
+
     static class Edge {
         public int u;
         public int v;
         public int c;
         public int flow;
+        public int idx;
 
-        public Edge(int u, int v, int c) {
+        public Edge(int u, int v, int c, int idx) {
             this.u = u;
             this.v = v;
             this.c = c;
