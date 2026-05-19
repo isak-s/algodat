@@ -22,46 +22,83 @@ Node nNodes - 1 is considered end (Lund)
     Store visited nodes so that we don't do a loop. store idx
     Store visited edges Apply delta to every edge in the path.
 */
+import java.util.Stack;
 
 public class Main {
 
-    public static Node[] createResidualGraph(Node[] original) {
-        Node[] residual = new Node[original.length];
-
-        for (int i = 0; i < original.length; i++) {
-            for (Edge e : original[i].edges) {
-                if (e.flow == 0) {
-                    // only forwards edge
-                    Edge forward = new Edge(e.u, e.v, e.c, 0);
-                    residual[i].addEdge(forward);
-                }
-                else if (e.c == e.flow) {
-                    // only backwards edge
-                    Edge backward = new Edge(e.v, e.u, e.flow, 0);
-                    residual[i].addEdge(backward);
-                } else {
-                    // create forward and backwards edge
-                    Edge forward = new Edge(e.u, e.v, e.c - e.flow, 0);
-                    Edge backward = new Edge(e.v, e.u, e.flow, 0);
-                    residual[i].addEdge(forward);
-                    residual[i].addEdge(backward);
-                }
+    public static ResidualGraph creatResidualGraph(Graph g) {
+        int n = g.adj.length;
+        ResidualGraph rg = new ResidualGraph(n);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; i++) {
+                if (g.adj[i][j] == null) {rg.adj[i][j] = 0;}
+                rg.adj[i][j] = g.adj[i][j].capacity; // forwards edge
+                // later these will be set to cap - flow and flow for backwards
             }
         }
-        return residual;
+        return rg;
     }
-    public int fordFulkerson(Node[] original, int start, int end) {
-        Node[] residual = createResidualGraph(original);
-        HashSet<Node> visitedNodes = new HashSet<>();
-        HashSet<Edge> edgesInPath = new HashSet<>();
 
-        // find a path.
-        // Is there a path?
-        // -> update all the edges on that path's cost
+    // using dfs
+    public static GTuple<ArrayList<Integer>, Integer> find_path(ResidualGraph rg) {
+        boolean[] visited = new boolean[rg.adj.length];
+        ArrayList<Integer> pathTaken = new ArrayList<>();
 
-        
+        int next = 0;
+        int curr = Integer.MAX_VALUE;  // placeholder
+        int bottleneck = Integer.MAX_VALUE;
 
-        return 0;
+        while (next != rg.adj.length -1) {
+
+            if (next == curr) {
+                return null;
+            }
+
+            int[] currAdj = rg.adj[next];
+            curr = next;
+            for (next = 0; next < currAdj.length; next++) {
+                if (currAdj[next] == 0 || visited[next]) {continue;}
+                visited[next] = true;
+
+                bottleneck = Math.min(rg.adj[curr][next], bottleneck);
+                pathTaken.add(next);
+                curr = next;
+                break;
+            }
+        }
+
+
+        return new GTuple<ArrayList<Integer>,Integer>(pathTaken, bottleneck);
+    }
+
+    public static int fordFulkerson(Graph g) {
+        ResidualGraph rg = creatResidualGraph(g);
+        var p = find_path(rg);
+        var pathTaken = p.a;
+        var bottleneck = p.b;
+        int totalFlow = 0;
+
+        while (pathTaken != null) {
+            int prev = 0; // first is always 0
+            for (int i = 0; i < pathTaken.size(); i++) {
+                // update original graph
+                // upper triangle : we did a backwards traversal
+                if (prev > i) {
+                    g.adj[prev][i].flow -= bottleneck;
+                } else {
+                    g.adj[prev][i].flow += bottleneck;
+                }
+                // update residual graph
+                // if flow and capacity are equal, this will be 0. 0 Represents no edge
+                rg.adj[prev][i] = g.adj[prev][i].capacity - g.adj[prev][i].flow;
+                rg.adj[i][prev] = g.adj[prev][i].flow;
+
+                prev = pathTaken.get(i);
+            }
+            totalFlow += bottleneck;
+        }
+
+        return totalFlow;
     }
 
     public static void main(String args[]) {
@@ -73,19 +110,15 @@ public class Main {
         int cCapacity = scan.nextInt();
         int pRoutesToRemove = scan.nextInt();
 
-        Node[] nodes = new Node[nNodes];
-        for (int i = 0; i < nNodes; i++) {
-            nodes[i] = new Node();
-        }
+        Graph g = new Graph(nNodes);
 
         for (int i = 0; i < mEdges; i++) {
             // these edges are undirected
             int nodeV = scan.nextInt();
             int nodeU = scan.nextInt();
             int c = scan.nextInt();
-            Edge e = new Edge(nodeU, nodeV, c, i);
 
-            nodes[nodeU].addEdge(e);
+            g.adj[nodeU][nodeV] = new Tuple(c, 0);
         }
 
         int lowestPossibleCapacity = 0;
@@ -94,7 +127,7 @@ public class Main {
         for (int i = 0; i < pRoutesToRemove; i++) {
             int edgeIdx = scan.nextInt();
 
-            removeEdge(nodes, edgeIdx);
+            // removeEdge(nodes, edgeIdx);
 
             int newCap = fordFulkerson();
             Boolean canRemove = newCap > cCapacity;
@@ -111,44 +144,35 @@ public class Main {
         scan.close();
     }
 
-    public static void removeEdge(Node[] nodes, int edgeIdxToRemove) {
-        for (Node node : nodes) {
-            for (Edge e : node.edges) {
-                if (e.idx == edgeIdxToRemove) {
-                    node.removeEdge(e);
-                    return;
-                }
-            }
+    static class GTuple<A, B> {
+        public A a;
+        public B b;
+
+        public GTuple(A a, B b) {
+            this.a = a;
+            this.b = b;
         }
     }
 
-    static class Node {
-        public HashSet<Edge> edges;
-
-        public Node() {
+    static class Tuple {
+        public int capacity, flow;
+        public Tuple(int c, int f) {
+            this.capacity = c;
+            this.flow = f;
         }
-
-        public void addEdge(Edge e) {
-            edges.add(e);
+    }
+    static class Graph {
+        public Tuple[][] adj;
+        public Graph(int n) {
+            this.adj = new Tuple[n][n];
         }
-
-        public void removeEdge(Edge e) {
-            edges.remove(e);
+    }
+    // lower triangle is positive edges, upper triangle is negative edges.
+    static class ResidualGraph {
+        public int[][] adj; // the capacity on each
+        public ResidualGraph(int n) {
+            this.adj = new int[n][n];
         }
     }
 
-    static class Edge {
-        public int u;
-        public int v;
-        public int c;
-        public int flow;
-        public int idx;
-
-        public Edge(int u, int v, int c, int idx) {
-            this.u = u;
-            this.v = v;
-            this.c = c;
-            this.flow = 0;
-        }
-    }
 }
