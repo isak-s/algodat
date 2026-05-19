@@ -25,8 +25,8 @@ Node nNodes - 1 is considered end (Lund)
 
 public class Main {
 
-    public void fordFulkerson(HashMap<Integer, Edge> edges, int start, int end) {
-
+    public int fordFulkerson(HashMap<Integer, Edge> edges, int start, int end) {
+        return 0;
     }
 
     public static void main(String args[]) {
@@ -50,13 +50,26 @@ public class Main {
             edges.put(i, e);
         }
 
+        int lowestPossibleCapacity = 0;
+        int nbrEdgesRemoved = 0;
+
         for (int i = 0; i < pRoutesToRemove; i++) {
             int edgeIdx = scan.nextInt();
-            Boolean canRemove = false;
-            if (canRemove) {
-                edges.remove(edgeIdx);
+
+            edges.remove(edgeIdx);
+
+            int newCap = fordFulkerson();
+            Boolean canRemove = newCap > cCapacity;
+
+            if (!canRemove) {
+                break;
             }
+
+            lowestPossibleCapacity = newCap;
+            nbrEdgesRemoved++;
+
         }
+        System.out.println(nbrEdgesRemoved + " " + lowestPossibleCapacity);
         scan.close();
     }
 
