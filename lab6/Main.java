@@ -23,6 +23,8 @@ Node nNodes - 1 is considered end (Lund)
 When removing an edge, the full flow of the graph does not need to be recomputed
 We can instead look at how the flow is affected by the removal.
 Reuse the flow computed initially, and fix up the flow.
+
+push the removed flow backwards
 */
 
 public class Main {
@@ -161,21 +163,24 @@ public class Main {
             int v = toE[edgeIdx];
 
             // tentatively remove the edge
+            int flowOnEdge = g.adj[u][v].flow;
             int savedCap = g.adj[u][v].capacity;
             g.adj[u][v].capacity = 0;
             g.adj[v][u].capacity = 0; // FIX: remove both directions
 
-            int newCap = fordFulkerson(g);
+            if (flowOnEdge != 0) {
+                int newCap = fordFulkerson(g);
 
-            if (newCap < cCapacity) {
-                // FIX: restore the edge if removing it violates the capacity constraint
-                g.adj[u][v].capacity = savedCap;
-                g.adj[v][u].capacity = savedCap;
-                break;
+                if (newCap < cCapacity) {
+                    // FIX: restore the edge if removing it violates the capacity constraint
+                    g.adj[u][v].capacity = savedCap;
+                    g.adj[v][u].capacity = savedCap;
+                    break;
+                }
+
+                lowestPossibleCapacity = newCap;
             }
-
-            lowestPossibleCapacity = newCap;
-            nbrEdgesRemoved++;
+           nbrEdgesRemoved++;
         }
 
         System.out.println(nbrEdgesRemoved + " " + lowestPossibleCapacity);
