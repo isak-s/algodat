@@ -157,18 +157,20 @@ public class Main {
 
         for (int i = 0; i < pRoutesToRemove; i++) {
             int edgeIdx = scan.nextInt();
+            int u = fromE[edgeIdx];
+            int v = toE[edgeIdx];
 
             // tentatively remove the edge
-            int savedCap = g.adj[fromE[edgeIdx]][toE[edgeIdx]].capacity;
-            g.adj[fromE[edgeIdx]][toE[edgeIdx]].capacity = 0;
-            g.adj[toE[edgeIdx]][fromE[edgeIdx]].capacity = 0; // FIX: remove both directions
+            int savedCap = g.adj[u][v].capacity;
+            g.adj[u][v].capacity = 0;
+            g.adj[v][u].capacity = 0; // FIX: remove both directions
 
             int newCap = fordFulkerson(g);
 
             if (newCap < cCapacity) {
                 // FIX: restore the edge if removing it violates the capacity constraint
-                g.adj[fromE[edgeIdx]][toE[edgeIdx]].capacity = savedCap;
-                g.adj[toE[edgeIdx]][fromE[edgeIdx]].capacity = savedCap;
+                g.adj[u][v].capacity = savedCap;
+                g.adj[v][u].capacity = savedCap;
                 break;
             }
 
